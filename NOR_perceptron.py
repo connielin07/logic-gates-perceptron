@@ -30,22 +30,22 @@ class Perceptron:
         """
         Step activation function.
 
-        Output rule:
-        - return 1 when x >= 0
-        - return 0 when x < 0
+        If the weighted sum is greater than or equal to 0,
+        return 1; otherwise, return 0.
 
-        This is suitable for logic gate classification problems,
-        where the output must be either 0 or 1.
+        This makes the perceptron suitable for binary classification,
+        such as logic gate problems.
         """
         return 1 if x >= 0 else 0
 
     def __call__(self, input_data):
         """
-        Predict the output for a given input sample.
+        Compute the perceptron output for a given input.
 
-        The perceptron first computes the weighted sum,
-        then applies the activation function to produce
-        the final binary prediction.
+        Steps:
+        1. Calculate weighted sum = weights · inputs + bias
+        2. Pass the result through the activation function
+        3. Return the predicted class (0 or 1)
         """
         weighted_sum = np.dot(self.weights, input_data) + self.bias
         return Perceptron.activation_function(weighted_sum)
@@ -63,28 +63,31 @@ class Perceptron:
         Perceptron update rule:
         error = target - prediction
 
-        If error is not zero:
-        - weights are adjusted according to the input values
-        - bias is adjusted to move the decision boundary
+        If prediction is incorrect:
+        - update weights by: weights += learning_rate * error * x
+        - update bias by: bias += learning_rate * error
+
+        The training stops early if all samples are classified correctly.
         """
         for epoch in range(epochs):
-            errors = 0  # Track the number of wrong predictions in each epoch
+            errors = 0  # Count how many samples are misclassified in this epoch
 
             for x, target in zip(training_data, targets):
                 prediction = self(x)
                 error = target - prediction
 
-                # Update only when the current prediction is incorrect
+                # Only update parameters when the prediction is wrong
                 if error != 0:
                     self.weights += learning_rate * error * x
                     self.bias += learning_rate * error
                     errors += 1
 
-            # Stop training early if every sample is classified correctly
+            # If no errors occur, the model has learned all training samples
             if errors == 0:
                 print(f"Training converged at epoch {epoch + 1}")
                 break
         else:
+            # This runs only if the loop finishes without convergence
             print("Training did not converge")
 
 
