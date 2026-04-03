@@ -1,57 +1,125 @@
 import numpy as np
 
-class Perceptron:    
+
+class Perceptron:
+    """
+    Single-layer perceptron for learning a 2-input logic gate.
+
+    This model uses:
+    1. weights to represent the contribution of each input
+    2. bias to adjust the decision threshold
+    3. a step activation function to produce binary output
+    """
+
     def __init__(self, input_length, weights=None, bias=None):
-        if weights is None:
-            self.weights = np.zeros(input_length)
-        else:
-            self.weights = weights
-        if bias is None:
-            self.bias = 0
-        else:
-            self.bias = bias    
-    
-    @staticmethod    
+        """
+        Initialize the perceptron.
+
+        Parameters:
+        - input_length: number of features in each input sample
+        - weights: optional initial weights
+        - bias: optional initial bias
+
+        If no weights or bias are provided, they start from 0.
+        """
+        self.weights = np.zeros(input_length) if weights is None else weights
+        self.bias = 0 if bias is None else bias
+
+    @staticmethod
     def activation_function(x):
-        if x >= 0:
-            return 1
-        return 0
-        
+        """
+        Step activation function.
+
+        Output rule:
+        - return 1 when x >= 0
+        - return 0 when x < 0
+
+        This is suitable for logic gate classification problems,
+        where the output must be either 0 or 1.
+        """
+        return 1 if x >= 0 else 0
+
     def __call__(self, input_data):
-        weighted_input = self.weights * input_data
-        weighted_sum = weighted_input.sum() + self.bias
+        """
+        Predict the output for a given input sample.
+
+        The perceptron first computes the weighted sum,
+        then applies the activation function to produce
+        the final binary prediction.
+        """
+        weighted_sum = np.dot(self.weights, input_data) + self.bias
         return Perceptron.activation_function(weighted_sum)
-    
+
     def train(self, training_data, targets, learning_rate=0.1, epochs=100):
+        """
+        Train the perceptron using training samples and target outputs.
+
+        Parameters:
+        - training_data: all input combinations
+        - targets: correct outputs for each input
+        - learning_rate: step size for parameter updates
+        - epochs: maximum number of passes through the dataset
+
+        Perceptron update rule:
+        error = target - prediction
+
+        If error is not zero:
+        - weights are adjusted according to the input values
+        - bias is adjusted to move the decision boundary
+        """
         for epoch in range(epochs):
-            errors = 0
+            errors = 0  # Track the number of wrong predictions in each epoch
+
             for x, target in zip(training_data, targets):
                 prediction = self(x)
                 error = target - prediction
+
+                # Update only when the current prediction is incorrect
                 if error != 0:
                     self.weights += learning_rate * error * x
                     self.bias += learning_rate * error
                     errors += 1
+
+            # Stop training early if every sample is classified correctly
             if errors == 0:
-                print(f"訓練在第 {epoch+1} 輪收斂")
+                print(f"Training converged at epoch {epoch + 1}")
                 break
         else:
-            print("訓練未收斂")
+            print("Training did not converge")
 
-# 建立訓練資料
-training_inputs = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
+
+# ---------------------------------------------------
+# Prepare training data for the NOR logic gate
+# ---------------------------------------------------
+# Four possible input combinations for two binary inputs
+training_inputs = np.array([
+    [0, 0],
+    [0, 1],
+    [1, 0],
+    [1, 1]
+])
+
+# NOR truth table:
+# 0 NOR 0 = 1
+# 0 NOR 1 = 0
+# 1 NOR 0 = 0
+# 1 NOR 1 = 0
 targets = np.array([1, 0, 0, 0])
 
-# 建立感知器（初始權重為0）
+# Create a perceptron with 2 input features
 NOR_Gate = Perceptron(2)
 
-# 訓練模型
+# Train the perceptron on NOR gate data
 NOR_Gate.train(training_inputs, targets)
 
-# 驗證模型
-print("最終權重:", NOR_Gate.weights)
-print("最終偏差:", NOR_Gate.bias)
-print("預測結果:")
+# Show the final weights and bias after learning
+print("Final weights:", NOR_Gate.weights)
+print("Final bias:", NOR_Gate.bias)
+
+# ---------------------------------------------------
+# Test the trained model on all input combinations
+# ---------------------------------------------------
+print("Prediction results:")
 for x, expected in zip(training_inputs, targets):
     predicted = NOR_Gate(x)
     print(f"{x} -> Predicted: {predicted}, Expected: {expected}")
