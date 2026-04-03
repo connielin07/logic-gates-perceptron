@@ -52,6 +52,6 @@ NOR_Gate.train(training_inputs, targets)
 print("最終權重:", NOR_Gate.weights)
 print("最終偏差:", NOR_Gate.bias)
 print("預測結果:")
-for x in training_inputs:
-    out = NOR_Gate(x)
-    print(f"{x} -> {out}")
+for x, expected in zip(training_inputs, targets):
+    predicted = NOR_Gate(x)
+    print(f"{x} -> Predicted: {predicted}, Expected: {expected}")
